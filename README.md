@@ -7,7 +7,7 @@ The main goal of ThreadStacks is to have the ability to inspect stacktraces of a
 ## Design
 ThreadStacks collects stacktraces of threads in a live process by using POSIX realtime signals. Realtime signals have two advantages over vanilla POSIX signals - they are queued, and they can carry a payload. Both of these features are crucial to ThreadStacks’s implementation, as described below. Writing correct signal handlers is tricky because of the async-signal safety requirements, but this restriction is what makes writing signal handlers fun - one has to come up with innovative solutions and workarounds for the restrictive environment. For example, it is unsafe to allocate memory from a signal handler, as most malloc() implementations are non-reentrant and thus are not async-signal-safe. Infact, POSIX enumerates only a handful of system calls that are guaranteed to be async-signal-safe.
 
-![Thread Stacktrace Collection Algorithm](https://lh3.googleusercontent.com/1_3297X3U3fbW0__Mpo7fvs2vv51M5Vr5qVgElfur-YU5MkqgcCpu1O12PwfBOQeV67qOcBmTd6mxw=w1151-h1933-rw)
+![Thread Stacktrace Collection Algorithm](https://github.com/thoughtspot/threadstacks/blob/master/resources/ThreadStacks.jpg)
 
 The following steps are executed to collect stacktraces of threads:
 1. Find the list of threads running in the process (T1, T2, T3). This is done by getting children of ‘/proc/self/task’ directory.
