@@ -20,18 +20,23 @@ The following steps are executed to collect stacktraces of threads:
 ## Usage
 ThreadStacks library can be used to inspect stacktraces of threads of a live process. A process can link against ThreadStacks library and install two of the signal handlers defined in 'StackTraceSignal' class to have the ability to live inspect its stacktraces:
 
+```
 thoughtspot::StackTraceSignal::InstallInternalHandler()
 thoughtspot::StackTraceSignal::InstallExternalHandler()
+```
 
 After the above two signal handlers have been installed, the 'StackTraceCollector' class can be used to collect stacktraces, e.g. from a REST handler.
 
-Installation of 'external' signal handler also ensures that the process dumps stacktraces of all threads on receiving signal 35, e.g. from a `kill -35` command.
+Installation of 'external' signal handler also ensures that the process dumps stacktraces of all threads to stderr on receiving signal 35, e.g. from a `kill -35` command.
 
 ## Building
 ThreadStacks uses bazel as its build system and depends on 'glog', 'gflags', and 'googletests' projects, as remote bazel projects.
 
 The code in ThreadStacks repository can be built by running:
+```
 bazel build //threadstacks/...
-
+```
 and tested by running:
+```
 bazel test //...
+```
