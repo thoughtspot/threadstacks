@@ -27,7 +27,7 @@ After the above two signal handlers have been installed, the 'StackTraceCollecto
 
 Installation of 'external' signal handler also ensures that the process dumps stacktraces of all threads on receiving signal 35, e.g. from a `kill -35` command.
 
-##Building
+## Building
 ThreadStacks uses bazel as its build system and depends on 'glog', 'gflags', and 'googletests' projects, as remote bazel projects.
 
 The code in ThreadStacks repository can be built by running:
