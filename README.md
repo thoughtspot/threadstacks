@@ -1,3 +1,5 @@
+Author: Nipun Sehrawat (nipun@thoughtspot.com)
+
 # Threadstacks
 ThreadStacks can be used to programatically inspect stacktraces of all threads of a live process that links against the ThreadStacks library. Roughly speaking, ThreadStacks provides the equivalent of Golang's `runtime.Stack()` for C/C++ programs. Besides programatic access to stacktraces, ThreadStacks also provides `jmap` style utility, where `kill -35` can be used to have a live process write stacktraces of all its threads to stderr.
 
