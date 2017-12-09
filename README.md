@@ -3,6 +3,8 @@ Author: Nipun Sehrawat (nipun@thoughtspot.com)
 # Threadstacks
 ThreadStacks can be used to programatically inspect stacktraces of all threads of a live process that links against the ThreadStacks library. Roughly speaking, ThreadStacks provides the equivalent of Golang's `runtime.Stack()` for C/C++ programs. Besides programatic access to stacktraces, ThreadStacks also provides `jmap` style utility, where `kill -35` can be used to have a live process write stacktraces of all its threads to stderr.
 
+ThreadStacks has been used by ThoughtSpot's production services since early 2015 and has become a staple debugging tool for both test and production environments. It has helped us debug a variety of issues in some of the most critical services in our stack, including our in-memory database and cluster manager. Some of the interesting issues include stuck database queries because of lock contention, dysfunctional cluster manager scheduler due to stuck HDFS reads, and deadlocked processes due to buggy recursive locking of `boost::shared_mutex`.
+
 ## Goal
 The main goal of ThreadStacks is to have the ability to inspect stacktraces of a live process, without pausing, stopping, or affecting its execution in any non-trivial way. ThreadStacks is used in critical backend services at ThoughtSpot, so having a bug-free implementation which guarantees safe, crash/corruption free invocation is paramount.
 
