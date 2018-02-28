@@ -380,6 +380,12 @@ auto StackTraceCollector::Collect(std::string* error) -> std::vector<Result> {
   // Step 4: Wait for all the acks, timing out after 5 seconds.
   int acks = 0;
   while (acks < tids.size()) {
+    // Set operations on pipe_fd[0] to be non-blocking. This is important if the
+    // select() on this fd returns, but the subsequent read block. This behaviour
+    // is possible in exceptional cases, and when occurs would cause the entire
+    // process to become non-responsive.
+    int flags = fcntl(pipe_fd[0], F_GETFL, 0);
+    fcntl(pipe_fd[0], F_SETFL, flags | O_NONBLOCK);
     fd_set read_fds;
     FD_ZERO(&read_fds);
     FD_SET(pipe_fd[0], &read_fds);
@@ -472,8 +478,11 @@ auto StackTraceCollector::Collect(std::string* error) -> std::vector<Result> {
 std::string StackTraceCollector::ToPrettyString(const std::vector<Result>& r) {
   std::ostringstream ss;
   for (const auto& e : r) {
+    if (e.empty()) {
+      continue;
+    }
     ss << "Threads: ";
-    for (int i = 0; i < e.tids.size() - 1; ++i) {
+    for (int i = 0; i < static_cast<int>(e.tids.size()) - 1; ++i) {
       ss << e.tids[i] << ", ";
     }
     ss << *e.tids.rbegin() << std::endl;
