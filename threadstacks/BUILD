@@ -7,7 +7,8 @@ cc_library(
             "//common:sysutil",
             "//common:types",
             "//external:glog", ],
-    linkopts = ["-lunwind"]
+    linkopts = ["-lunwind"],
+    visibility = ["//visibility:public"],
 )
 
 cc_test(
