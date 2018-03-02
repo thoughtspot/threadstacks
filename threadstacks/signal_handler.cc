@@ -478,7 +478,8 @@ auto StackTraceCollector::Collect(std::string* error) -> std::vector<Result> {
 std::string StackTraceCollector::ToPrettyString(const std::vector<Result>& r) {
   std::ostringstream ss;
   for (const auto& e : r) {
-    if (e.empty()) {
+    if (e.tids.empty()) {
+      ss << "No Threads" << std::endl;
       continue;
     }
     ss << "Threads: ";
