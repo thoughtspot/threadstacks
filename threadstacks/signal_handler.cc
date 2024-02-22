@@ -12,6 +12,7 @@
 #include <sys/timerfd.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <poll.h>
 
 #include <algorithm>
 #include <cstring>
@@ -386,28 +387,31 @@ auto StackTraceCollector::Collect(std::string* error) -> std::vector<Result> {
     // process to become non-responsive.
     int flags = fcntl(pipe_fd[0], F_GETFL, 0);
     fcntl(pipe_fd[0], F_SETFL, flags | O_NONBLOCK);
-    fd_set read_fds;
-    FD_ZERO(&read_fds);
-    FD_SET(pipe_fd[0], &read_fds);
-    FD_SET(timer_fd, &read_fds);
-    auto max_fd = std::max(pipe_fd[0], timer_fd) + 1;
-    auto ret = select(max_fd, &read_fds, nullptr, nullptr, nullptr);
+    pollfd pipeAndTimerPollFd[2];
+    pipeAndTimerPollFd[0].fd = pipe_fd[0];
+    pipeAndTimerPollFd[0].events = POLLIN;
+    pipeAndTimerPollFd[1].fd = timer_fd;
+    pipeAndTimerPollFd[1].events = POLLIN;
+    const int noTimeout = -1;
+    auto ret = poll(pipeAndTimerPollFd, 2, noTimeout);   
     if (ret == -1) {
-      std::cerr << "select(...) failed, will try again" << std::endl;  // errno
+      std::cerr << "poll(...) failed, will try again" << std::endl;
     } else if (ret == 0) {
-      // We should never encounter this case as we use an infinite timeout in
-      // the select syscall.
-      std::cerr << "No file descriptors ready, will try again"
-                << std::endl;  // errno
-    } else if (FD_ISSET(timer_fd, &read_fds)) {
+      // This should never happen as 0 means timeout but no timeout has been given!
+      std::cerr << "poll() returned 0 even though no timeout was given, will try again" << std::endl;
+    } else if(pipeAndTimerPollFd[1].revents == POLLIN) {
       std::cerr << "Failed to get all (" << tids.size()
-                << ") the stacktrace acks within timeout. Got only " << acks
-                << std::endl;  // errno
+                << ") the stacktrace messages within timeout. Got only " << acks
+                << std::endl;
       error->assign("Failed to get all (" + std::to_string(tids.size()) +
                     ") stacktraces within timeout. Got only " +
                     std::to_string(acks));
       return {};
-    } else if (FD_ISSET(pipe_fd[0], &read_fds)) {
+    } else {
+      if(pipeAndTimerPollFd[0].revents != POLLIN) {
+        std::cerr << "Error calling poll(), expected the pipe to be ready for reading!" << std::endl;
+      } 
+  
       char ch;
       auto num_read = read(pipe_fd[0], &ch, sizeof(ch));
       if (-1 == num_read) {
